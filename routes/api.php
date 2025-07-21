@@ -20,7 +20,9 @@ Route::get('/user', function (Request $request) {
         Route::get('', [ProductController::class, 'index']);
     });
 // });
-Route::prefix('profile')->group(function () {
+Route::middleware('isLoggin')->prefix('profile')->group(function () {
     // Route::post('', [ProductController::class, 'store']);
+    Route::get('/secure/{id}', [UserController::class, 'getProfileSecureID']);
+    Route::get('/secure', [UserController::class, 'getProfileSecure']);
     Route::get('/{id}', [UserController::class, 'getProfile']);
 });
