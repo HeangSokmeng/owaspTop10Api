@@ -17,20 +17,27 @@ class UserController extends Controller
         // $authUser = UserService::getAuthUser();
         // $id = $authUser->id;
         $user = User::selectRaw('id, name,email')->find($id);
-        if ($user) $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
+        if ($user)
+            $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
         return ApiResponse::JsonResult($user);
     }
-    public function getProfileSecure(Request $req, $id)
+    public function getProfileSecureID(Request $req, $id)
     {
-        // $authUser = UserService::getAuthUser();
-        // $id = $authUser->id;
         $user = User::selectRaw('id, name,email')->find($id);
-        // if ($user) {
-        //     $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
-        // }
+        if ($user)
+            $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
         return ApiResponse::JsonResult($user);
     }
 
+    public function getProfileSecure()
+    {
+        $authUser = UserService::getAuthUser();
+        $id = $authUser->id;
+        $user = User::selectRaw('id, name,email')->find($id);
+        if ($user)
+            $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
+        return ApiResponse::JsonResult($user);
+    }
 
 
     public function login(Request $request)
@@ -62,7 +69,4 @@ class UserController extends Controller
         ];
         return ApiResponse::JsonResult($data, 'Login successful.');
     }
-
-
-
 }

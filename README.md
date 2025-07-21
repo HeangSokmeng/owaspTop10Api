@@ -1,67 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+OWASP API Security Top 10 – Vulnerabilities with Examples
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+1. Broken Object Level Authorization (BOLA)
+    1. **Test**: Try accessing another user's resource by changing the ID.
+    2. Example
+        1. GET /api/users/19/profile   ← your own
+        2. GET /api/users/20/profile   ← another user's
+            The issue:
+                When a user login with an account that has id = 19, they are able to access not only their own profile but also the profile of other users, such as user with id = 20 to get information.
+        Similarly:
+        1. GET /api/users/19/wishlist – This should return only the logged-in user's wishlist (e.g., their favorite         
+            products or categories).
+        2. GET /api/users/20/wishlist – This incorrectly allows the logged-in user (with id = 19) to access another user's 
+            wishlist.
+    3. **Expected Fix: The** 
+        - The backend should verify that the user_id in the request matches the auth_user_id (the ID of the authenticated 
+            user)
+        This can be fixed using Laravel Sanctum, Laravel Passport, or JWT by creating a middleware that:
+        # Requires the user to be logged in (authenticated)
+        # After Logged Checks that the user_id in the request matches the authenticated user's ID, allowing users to access only their own profile or related resources.
+        ..Login 
+        ![alt text](image.png)
+        ..non secure
+        ![alt text](image-1.png)
+        ..secure
+        ![alt text](image-2.png)
 
-## About Laravel
+2. Broken User Authentication
+    1. **Example**:
+        1. **Test**: Try using a weak token or a missing token.
+        2. POST /api/user/data
+        3. Header: Authorization: Bearer abc123    ← test if this is accepted
+    2. **Expected Fix**: Tokens should expire, be signed securely, and verified on each request.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+3. Excessive Data Exposure
+    1. **Test**: Check if sensitive data is returned.
+    2. **Example Response**:
+        1. {
+            "id": 12,
+            "email": "[user@example.com](mailto:user@example.com)",
+            "password_hash": "$2a$10$Xyz123..."
+        }
+    3. **Expected Fix**: Only return needed fields in responses.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+4. Lack of Resources & Rate Limiting
+    1. **Test**: Send many requests quickly.
+    2. Example:
+        1. for i in {1..100}; do curl http://api.test.com/login; done
+    3. **Expected Fix**: Apply rate limits per IP or user token
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+5. Broken Function Level Authorization
+    1. **Test**: Use a lower-permission token to access admin actions.
+    2. Example
+        1. DELETE /api/admin/delete-user/123   ← with normal user token
+    3. **Expected Fix**: Check user roles/permissions in the backend.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
+6. Mass Assignment
+    1. **Test**: Try sending extra parameters in the request.
+    2. **Example**:
+        1. {
+        "username": "test",
+        "isAdmin": true
+        }
+    3. **Expected Fix**: Use whitelisting to control which fields can be updated.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### Premium Partners
+7. Security Misconfiguration
+    1. **Test**: Check for
+    2. 
+        - Stack traces in error
+        - Missing security headers
+        - Open CORS policy (`Access-Control-Allow-Origin: *`)
+    3. **Fix**: Sanitize errors, use CSP headers, and configure CORS strictly.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
 
-## Contributing
+8. Injection (SQL, NoSQL, Command Injection)
+    1. **Test**: Try sending injection payloads.
+    2. Example
+        1. {
+        "username": "admin' OR '1'='1",
+        "password": "anything"
+        }
+    3. **Expected Fix**: Use prepared statements and input validation
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+9. Improper Asset Management
+    1. **Test**: Discover unused or old versions of APIs.
+    2. 
+        /api/v1/users
+        /api/v2/users ← legacy, still active?
+    3. **Fix**: Keep inventory and disable old or unmaintained endpoints.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-"# owaspTop10Api" 
+10. Insufficient Logging & Monitoring
+    1. **Test**: Trigger errors or failed login attempts.
+    2. **Fix**: Ensure such events are logged and alerting is in place

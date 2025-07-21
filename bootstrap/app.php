@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\isLoggin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use App\Http\Middleware\awtAuth;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'jwtAuth' => awtAuth::class,
+            'isLoggin' => isLoggin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
