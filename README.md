@@ -68,10 +68,10 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
             example :<br/>
             $validator = Validator::make($req->all(), ['password' => 'required|string',]);<br/>
-            ![alt text](image-6.png)
+            ![alt text](image-6.png)<br/>
 
-            sulotion
-            example :
+            sulotion<br/>
+            example :<br/>
             $validator = Validator::make($req->all(), [
                 'password' => [
                     'required',
@@ -98,17 +98,17 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
             in the case not set rating limit on request endpoint login<br/>
             example :<br/>
             Route::post('/login', [UserController::class, 'login']);<br/>
-            ![alt text](image-10.png)
+            ![alt text](image-10.png)<br/>
 
-            sulotion
-            example :
-            Route::middleware('throttle:daily-limit')->post('/login', [UserController::class, 'loginSecure']);
+            sulotion<br/>
+            example :<br/>
+            Route::middleware('throttle:daily-limit')->post('/login', [UserController::class, 'loginSecure']);<br/>
             ![alt text](image-11.png)
 
 
     2. **Expected Fix**: Tokens should expire, be signed securely, and verified on each request.
 
-3. Excessive Data Exposure
+ 3. Excessive Data Exposure
 
     1. **Test**: Check if sensitive data is returned.
     2. **Example Response**:
