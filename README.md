@@ -43,6 +43,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
         ..Or can use the same id in the route (e.g. /profile/{id}), but must check that the requested id matches the authenticated user's ID in the backend.
         ![alt text](image-3.png)
 
+
 2. Broken User Authentication
 
     ![alt text](image-5.png)
@@ -51,22 +52,22 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
     1. **Example**: Attack
 
-        1. **Test**: Try using a weak token or a missing token.
-            POST /api/user/data
-            Header: Authorization: Bearer abc123 ← test if this is accepted
-            in this case missing on not set middleware in route
-                Route::post('/user/data', [UserController::class, 'data']);
-            sulotion
+        1. **Test**: Try using a weak token or a missing token.<br/>
+            POST /api/user/data<br/>
+            Header: Authorization: Bearer abc123 ← test if this is accepted<br/>
+            in this case missing on not set middleware in route<br/>
+                Route::post('/user/data', [UserController::class, 'data']);<br/>
+            sulotion<br/>
                 Route::get('/secure', [UserController::class, 'getProfileSecure'])->middleware('isLoggin');
 
 
-        2. **Test**: Try using a weak password
-            POST /api/auth/register
-            Body: { "username": "admin", "password": "123456" }
-            in this case password validation is not set
+        2. **Test**: Try using a weak password<br/>
+            POST /api/auth/register<br/>
+            Body: { "username": "admin", "password": "123456" }<br/>
+            in this case password validation is not set<br/>
 
-            example :
-            $validator = Validator::make($req->all(), ['password' => 'required|string',]);
+            example :<br/>
+            $validator = Validator::make($req->all(), ['password' => 'required|string',]);<br/>
             ![alt text](image-6.png)
 
             sulotion
@@ -82,7 +83,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
                     'regex:/[@$!%*?&#]/',
                     'confirmed'
                 ],
-            );
+            );<br/><br/>
             ![alt text](image-7.png)
             ![alt text](image-8.png)
             ![alt text](image-9.png)
@@ -92,9 +93,9 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
             - Throttle requests to avoid brute force
             - Validate credentials strictly
             - Use rate limiting (Laravel built-in):
-            in the case not set rating limit on request endpoint login
-            example :
-            Route::post('/login', [UserController::class, 'login']);
+            in the case not set rating limit on request endpoint login<br/>
+            example :<br/>
+            Route::post('/login', [UserController::class, 'login']);<br/>
             ![alt text](image-10.png)
 
             sulotion
