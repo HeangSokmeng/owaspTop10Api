@@ -23,9 +23,12 @@ class UserController extends Controller
     }
     public function getProfileSecureID(Request $req, $id)
     {
-        $user = User::selectRaw('id, name,email')->find($id);
+        $authUser = UserService::getAuthUser();
+        if ($authUser->id != $id)
+            return ApiResponse::ValidateFail("You are not allowed to access this user's profile.");
+        $user = User::select('id', 'name', 'email')->find($id);
         if ($user)
-            $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
+            $user->role_id = UserRole::where('user_id', $id)->value('role_id');
         return ApiResponse::JsonResult($user);
     }
 

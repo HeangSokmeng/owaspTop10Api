@@ -19,12 +19,16 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
         This can be fixed using Laravel Sanctum, Laravel Passport, or JWT by creating a middleware that:
             - Requires the user to be logged in (authenticated)
             - After Logged Checks that the user_id in the request matches the authenticated user's ID, allowing users to access only their own profile or related resources.
+            - And have two ways can do 1. user without id  requested and 2. user with id requested
         ..Login 
         ![alt text](image.png)
         ..non secure
         ![alt text](image-1.png)
         ..secure
         ![alt text](image-2.png)
+        ..Or can use the same id in the route (e.g. /profile/{id}), but must check that the requested id matches the authenticated user's ID in the backend.
+        ![alt text](image-3.png)
+        
 
 2. Broken User Authentication
     1. **Example**:
