@@ -1,6 +1,6 @@
 OWASP API Security Top 10 – Vulnerabilities with Examples
 
-1. Broken Object Level Authorization (BOLA)
+# 1. Broken Object Level Authorization (BOLA)
 
     ![alt text](image-4.png)
 
@@ -44,7 +44,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
         ![alt text](image-3.png)
 
 
-2. Broken User Authentication
+# 2. Broken User Authentication
 
     ![alt text](image-5.png)
 
@@ -108,7 +108,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
     2. **Expected Fix**: Tokens should expire, be signed securely, and verified on each request.
 
-3. Excessive Data Exposure
+# 3. Excessive Data Exposure
 
     1. **Test**: Check if sensitive data is returned.
     2. **Example Response**:
