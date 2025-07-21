@@ -1,31 +1,41 @@
 OWASP API Security Top 10 – Vulnerabilities with Examples
 
 1. Broken Object Level Authorization (BOLA)
+
+    ![alt text](image-4.png)
+
+    -- Failures in this mechanism typically lead to unauthorized information disclosure, modification, or destruction of all data.
+    -- Example: A user can access and modify another user's data by manipulating the URL.
     1. **Test**: Try accessing another user's resource by changing the ID.
-    2. Example
+    2. Example Attack
         1. GET /api/users/19/profile   ← your own
         2. GET /api/users/20/profile   ← another user's
 
             The issue:
                 When a user login with an account that has id = 19, they are able to access not only their own profile but also the profile of other users, such as user with id = 20 to get information.
+        
         Similarly:
         1. GET /api/users/19/wishlist – This should return only the logged-in user's wishlist (e.g., their favorite         
             products or categories).
         2. GET /api/users/20/wishlist – This incorrectly allows the logged-in user (with id = 19) to access another user's 
             wishlist.
-    3. **Expected Fix: The** 
+    3. **Expected Fix: The**  Solutions
         - The backend should verify that the user_id in the request matches the auth_user_id (the ID of the authenticated 
             user)
         This can be fixed using Laravel Sanctum, Laravel Passport, or JWT by creating a middleware that:
             - Requires the user to be logged in (authenticated)
             - After Logged Checks that the user_id in the request matches the authenticated user's ID, allowing users to access only their own profile or related resources.
             - And have two ways can do 1. user without id  requested and 2. user with id requested
+
         ..Login 
         ![alt text](image.png)
+
         ..non secure
         ![alt text](image-1.png)
+
         ..secure
         ![alt text](image-2.png)
+
         ..Or can use the same id in the route (e.g. /profile/{id}), but must check that the requested id matches the authenticated user's ID in the backend.
         ![alt text](image-3.png)
         
