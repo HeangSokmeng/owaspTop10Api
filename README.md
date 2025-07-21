@@ -5,6 +5,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
     2. Example
         1. GET /api/users/19/profile   ← your own
         2. GET /api/users/20/profile   ← another user's
+
             The issue:
                 When a user login with an account that has id = 19, they are able to access not only their own profile but also the profile of other users, such as user with id = 20 to get information.
         Similarly:
@@ -16,8 +17,8 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
         - The backend should verify that the user_id in the request matches the auth_user_id (the ID of the authenticated 
             user)
         This can be fixed using Laravel Sanctum, Laravel Passport, or JWT by creating a middleware that:
-        # Requires the user to be logged in (authenticated)
-        # After Logged Checks that the user_id in the request matches the authenticated user's ID, allowing users to access only their own profile or related resources.
+            - Requires the user to be logged in (authenticated)
+            - After Logged Checks that the user_id in the request matches the authenticated user's ID, allowing users to access only their own profile or related resources.
         ..Login 
         ![alt text](image.png)
         ..non secure
