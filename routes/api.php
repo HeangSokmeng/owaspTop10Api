@@ -19,7 +19,6 @@ Route::get('/user', function (Request $request) {
         Route::post('', [ProductController::class, 'store']);
         Route::get('', [ProductController::class, 'index']);
     });
-
 // });
 Route::prefix('profile')->group(function () {
     // Route::post('', [ProductController::class, 'store']);
