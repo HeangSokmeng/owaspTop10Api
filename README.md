@@ -1,6 +1,6 @@
-OWASP API Security Top 10 – Vulnerabilities with Examples
+1. OWASP API Security Top 10 – Vulnerabilities with Examples
 
-1. Broken Object Level Authorization (BOLA)
+    <h2> 1. Broken Object Level Authorization (BOLA) </h2>
 
     ![alt text](image-4.png)
 
@@ -44,7 +44,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
         ![alt text](image-3.png)
 
 
-2. Broken User Authentication
+    <h2> 2. Broken User Authentication </h2>
 
     ![alt text](image-5.png)
 
