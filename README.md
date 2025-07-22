@@ -287,13 +287,40 @@ Table of Contents
                     "[AUTH] Consider API authentication and authorization improvements"
                 ]
             } ```
-            
+
     - set limit rating
 
         ![alt text](image-25.png)
         ![alt text](image-26.png)
 
     - write python script to attacks like ddos
+
+        ![alt text](image-27.png)
+
+        ``` 
+            "attack_summary": {
+                "target_url": "http://192.168.18.53:8000/api/view/product",
+                "attack_date": "2025-07-23T01:03:18.883586",
+                "total_attacks": 336,
+                "successful_attacks": 120,
+                "rate_limited_attacks": 216,
+                "server_errors": 0,
+                "attack_duration": 138.8990457057953
+            },
+            "security_assessment": {
+                "status": "[WARNING] MODERATELY PROTECTED",
+                "risk_level": "MEDIUM",
+                "rate_limit_effectiveness": 0.6428571428571429,
+                "success_rate": 0.35714285714285715,
+                "server_stability": 1.0
+            },
+            "attack_type_breakdown": {
+                "API_SCRAPING": {
+                "total_requests": 336,
+                "success_rate": 0.35714285714285715,
+                "avg_response_time": 1198.6441626435235
+                }
+            }, ```
 
 
 3. **Expected Fix**: Apply rate limits per IP or user token
