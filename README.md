@@ -157,63 +157,9 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
     1. **Test**: Check if sensitive data is returned.
     2. **Example Response**:
-        1. "data": [
-            {
-                "id": 4,
-                "name": "coca",
-                "title": "Test",
-                "user_id": 4,
-                "user": {
-                    "id": 4,
-                    "name": "me",
-                    "email": "haha55@example.com",
-                    "email_verified_at": null,
-                    "created_at": "2025-07-21T08:16:13.000000Z",
-                    "updated_at": "2025-07-21T08:16:13.000000Z"
-                }
-            },
-            {
-                "id": 3,
-                "name": "coca",
-                "title": "Test",
-                "user_id": 4,
-                "user": {
-                    "id": 4,
-                    "name": "me",
-                    "email": "haha55@example.com",
-                    "email_verified_at": null,
-                    "created_at": "2025-07-21T08:16:13.000000Z",
-                    "updated_at": "2025-07-21T08:16:13.000000Z"
-                }
-            },
-            {
-                "id": 2,
-                "name": "coca",
-                "title": "Test",
-                "user_id": 1,
-                "user": {
-                    "id": 1,
-                    "name": "Admin User",
-                    "email": "admin@example.com",
-                    "email_verified_at": null,
-                    "created_at": "2025-07-21T02:49:11.000000Z",
-                    "updated_at": "2025-07-21T02:49:11.000000Z"
-                }
-            },
-            {
-                "id": 1,
-                "name": "coca",
-                "title": "Test",
-                "user_id": 1,
-                "user": {
-                    "id": 1,
-                    "name": "Admin User",
-                    "email": "admin@example.com",
-                    "email_verified_at": null,
-                    "created_at": "2025-07-21T02:49:11.000000Z",
-                    "updated_at": "2025-07-21T02:49:11.000000Z"
-                }
-            }
+        1.  <br/>
+            <br/>
+    ![alt text](image-19.png)
             <br/>
             <br/>
         - Issue: we are working on  product id, name, title, and created_at but why return creator?
@@ -222,39 +168,15 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
         2. To fix "Excessive Data Exposure" in Laravel—especially when using select or selectRaw thats want to only select
             the columns truly need and avoid returning entire models unnecessarily.
             - to
-                "data": [
-                            {
-                                "id": 4,
-                                "name": "coca",
-                                "title": "Test",
-                                "created_at": "2025-07-22T08:52:01.000000Z"
-                            },
-                            {
-                                "id": 3,
-                                "name": "coca",
-                                "title": "Test",
-                                "created_at": "2025-07-22T06:50:39.000000Z"
-                            },
-                            {
-                                "id": 2,
-                                "name": "coca",
-                                "title": "Test",
-                                "created_at": "2025-07-22T06:37:23.000000Z"
-                            },
-                            {
-                                "id": 1,
-                                "name": "coca",
-                                "title": "Test",
-                                "created_at": "2025-07-22T06:35:44.000000Z"
-                            }
-                        ]
-                    ]
-
-            ![alt text](image-17.png)
             <br/>
             <br/>
-
-        3. **Expected Fix**: Only return needed fields in responses.
+    ![alt text](image-18.png)
+                    <br/>
+                    <br/>
+    ![alt text](image-17.png)
+                    <br/>
+                    <br/>
+    3. **Expected Fix**: Only return needed fields in responses.
 
 4. Lack of Resources & Rate Limiting
 

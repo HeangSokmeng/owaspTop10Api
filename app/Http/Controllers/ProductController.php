@@ -16,7 +16,7 @@ class ProductController extends Controller
     // GET /api/products
     public function index()
     {
-        $products = Product::query()->selectRaw('id, name, title, created_at')->orderByDesc('id')->get();
+        $products = Product::query()->with('user')->selectRaw('id, name, title, user_id')->orderByDesc('id')->get();
         return ApiResponse::JsonResult($products, "Get product Lists");
     }
 
