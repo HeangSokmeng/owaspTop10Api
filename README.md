@@ -1,4 +1,17 @@
 # OWASP API Security Top 10 – Vulnerabilities with Examples
+A comprehensive guide covering the most critical API security vulnerabilities with practical examples and Laravel-specific solutions.
+Table of Contents
+
+1. Broken Object Level Authorization (BOLA)
+2. Broken User Authentication
+3. Excessive Data Exposure
+4. Lack of Resources & Rate Limiting
+5. Broken Function Level Authorization
+6. Mass Assignment
+7. Security Misconfiguration
+8. Injection Attacks
+9. Improper Asset Management
+10. Insufficient Logging & Monitoring
 
 ## 1. Broken Object Level Authorization (BOLA)
 
