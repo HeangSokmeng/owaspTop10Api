@@ -140,15 +140,14 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
          5. **Test**: Doesn't validate the JWT expiration date.
 
-
-
-
     2. **Expected Fix**: Tokens should expire, be signed securely, and verified on each request.
 
 
 
  3. Excessive Data Exposure
 
+    ![alt text](image-20.png)
+    
     --Exploitation of Excessive Data Exposure is simple, and is usually performed by sniffing the traffic to analyze the API responses, looking for sensitive data exposure that should not be returned to the user.
     -- Excessive Data Exposure commonly leads to exposure of sensitive data.
 
@@ -176,7 +175,9 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
     ![alt text](image-17.png)
                     <br/>
                     <br/>
-    3. **Expected Fix**: Only return needed fields in responses.
+    **Expected Fix in this case**: Only return needed fields in responses.
+
+
 
 4. Lack of Resources & Rate Limiting
 
