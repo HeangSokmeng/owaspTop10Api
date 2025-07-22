@@ -19,14 +19,25 @@ Route::get('/user', function (Request $request) {
 });
 
 // Route::middleware(['auth:api', 'role:superadmin'])->group(function () {
+
+// });
+Route::middleware('isLoggin')->group(function () {
     Route::prefix('product')->group(function () {
         Route::post('', [ProductController::class, 'store']);
         Route::get('', [ProductController::class, 'index']);
     });
-// });
-Route::middleware('isLoggin')->prefix('profile')->group(function () {
-    // Route::post('', [ProductController::class, 'store']);
-    Route::get('/secure/{id}', [UserController::class, 'getProfileSecureID']);
-    Route::get('/secure', [UserController::class, 'getProfileSecure']);
-    Route::get('/{id}', [UserController::class, 'getProfile']);
+    Route::prefix('profile')->group(function () {  // Route::post('', [ProductController::class, 'store']);
+        Route::get('/secure/{id}', [UserController::class, 'getProfileSecureID']);
+        Route::get('/secure', [UserController::class, 'getProfileSecure']);
+        Route::get('/{id}', [UserController::class, 'getProfile']);
+    });
+
+});
+
+Route::prefix('view')->group(function () {
+    Route::prefix('product')->group(function () {
+        Route::post('', [ProductController::class, 'store']);
+        Route::get('', [ProductController::class, 'index']);
+    });
+
 });

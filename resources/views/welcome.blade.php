@@ -33,5 +33,6 @@ $array = array_values($array);
 
 print_r($array);
 
+// @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 ?>

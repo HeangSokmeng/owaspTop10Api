@@ -145,16 +145,116 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
     2. **Expected Fix**: Tokens should expire, be signed securely, and verified on each request.
 
+
+
  3. Excessive Data Exposure
+
+    --Exploitation of Excessive Data Exposure is simple, and is usually performed by sniffing the traffic to analyze the API responses, looking for sensitive data exposure that should not be returned to the user.
+    -- Excessive Data Exposure commonly leads to exposure of sensitive data.
+
+    ![alt text](image-16.png)
+
 
     1. **Test**: Check if sensitive data is returned.
     2. **Example Response**:
-        1. {
-           "id": 12,
-           "email": "[user@example.com](mailto:user@example.com)",
-           "password_hash": "$2a$10$Xyz123..."
-           }
-    3. **Expected Fix**: Only return needed fields in responses.
+        1. "data": [
+            {
+                "id": 4,
+                "name": "coca",
+                "title": "Test",
+                "user_id": 4,
+                "user": {
+                    "id": 4,
+                    "name": "me",
+                    "email": "haha55@example.com",
+                    "email_verified_at": null,
+                    "created_at": "2025-07-21T08:16:13.000000Z",
+                    "updated_at": "2025-07-21T08:16:13.000000Z"
+                }
+            },
+            {
+                "id": 3,
+                "name": "coca",
+                "title": "Test",
+                "user_id": 4,
+                "user": {
+                    "id": 4,
+                    "name": "me",
+                    "email": "haha55@example.com",
+                    "email_verified_at": null,
+                    "created_at": "2025-07-21T08:16:13.000000Z",
+                    "updated_at": "2025-07-21T08:16:13.000000Z"
+                }
+            },
+            {
+                "id": 2,
+                "name": "coca",
+                "title": "Test",
+                "user_id": 1,
+                "user": {
+                    "id": 1,
+                    "name": "Admin User",
+                    "email": "admin@example.com",
+                    "email_verified_at": null,
+                    "created_at": "2025-07-21T02:49:11.000000Z",
+                    "updated_at": "2025-07-21T02:49:11.000000Z"
+                }
+            },
+            {
+                "id": 1,
+                "name": "coca",
+                "title": "Test",
+                "user_id": 1,
+                "user": {
+                    "id": 1,
+                    "name": "Admin User",
+                    "email": "admin@example.com",
+                    "email_verified_at": null,
+                    "created_at": "2025-07-21T02:49:11.000000Z",
+                    "updated_at": "2025-07-21T02:49:11.000000Z"
+                }
+            }
+            <br/>
+            <br/>
+        - Issue: we are working on  product id, name, title, and created_at but why return creator?
+        <br/>
+        <br/>
+        2. To fix "Excessive Data Exposure" in Laravel—especially when using select or selectRaw thats want to only select
+            the columns truly need and avoid returning entire models unnecessarily.
+            - to
+                "data": [
+                            {
+                                "id": 4,
+                                "name": "coca",
+                                "title": "Test",
+                                "created_at": "2025-07-22T08:52:01.000000Z"
+                            },
+                            {
+                                "id": 3,
+                                "name": "coca",
+                                "title": "Test",
+                                "created_at": "2025-07-22T06:50:39.000000Z"
+                            },
+                            {
+                                "id": 2,
+                                "name": "coca",
+                                "title": "Test",
+                                "created_at": "2025-07-22T06:37:23.000000Z"
+                            },
+                            {
+                                "id": 1,
+                                "name": "coca",
+                                "title": "Test",
+                                "created_at": "2025-07-22T06:35:44.000000Z"
+                            }
+                        ]
+                    ]
+
+            ![alt text](image-17.png)
+            <br/>
+            <br/>
+
+        3. **Expected Fix**: Only return needed fields in responses.
 
 4. Lack of Resources & Rate Limiting
 

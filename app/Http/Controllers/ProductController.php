@@ -2,33 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
     // GET /api/products
     public function index()
     {
-        // $products = Cache::remember('products_all', 60, function () {
-        //     return Product::all();
-        // });
-        $products = Product::query()->selectRaw('id, name, title')->get();
-        // $products =  Product::selectRaw()
-        return response()->json($products, 200);
+        $products = Product::query()->selectRaw('id, name, title, created_at')->orderByDesc('id')->get();
+        return ApiResponse::JsonResult($products, "Get product Lists");
     }
 
-    // POST /api/products
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'title' => 'required|string|max:255',
         ]);
-
-        $product = Product::create($request->all());
+        $user = UserService::getAuthUser();
+        $data = $request->only(['name', 'title']);
+        $data['user_id'] = $user->id;
+        $product = Product::create($data);
         return response()->json($product, 201);
     }
 
@@ -36,20 +37,14 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::find($id);
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
+        if (!$product) return response()->json(['message' => 'Product not found'], 404);
         return response()->json($product, 200);
     }
 
-    // PUT/PATCH /api/products/{id}
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
-
+        if (!$product) return response()->json(['message' => 'Product not found'], 404);
         $product->update($request->all());
         return response()->json($product, 200);
     }
@@ -58,11 +53,19 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::find($id);
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
-
+        if (!$product)  return response()->json(['message' => 'Product not found'], 404);
         $product->delete();
         return response()->json(['message' => 'Product deleted'], 200);
     }
+
+    public function showProductsForView()
+    {
+        $products = Product::query()
+            ->with('user')
+            ->select('id', 'name', 'title', 'user_id')
+            ->orderByDesc('id')
+            ->get();
+        return view('products.index', compact('products'));
+    }
+
 }
