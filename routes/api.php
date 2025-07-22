@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [UserController::class, 'loginInsecure']);
-    Route::middleware('throttle:daily-limit')->post('/login', [UserController::class, 'loginSecure']);
+    // Route::post('/login', [UserController::class, 'loginInsecure']);
+    Route::post('/login', [UserController::class, 'loginSecure']);
+    // Route::middleware('throttle:daily-limit')->post('/login', [UserController::class, 'loginSecure']);
     Route::post('/register/insecure', [UserController::class, 'registerInsecure']);
     Route::post('/register/secure', [UserController::class, 'registerecure']);
     // Route::prefix('login')->group(function () { });

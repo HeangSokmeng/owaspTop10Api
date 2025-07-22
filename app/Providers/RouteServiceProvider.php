@@ -22,9 +22,9 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        RateLimiter::for('daily-limit', function (Request $request) {
-            return Limit::perDay(6)->by($request->ip());
-        });
+        // RateLimiter::for('daily-limit', function (Request $request) {
+        //     return Limit::perDay(6)->by($request->ip());
+        // });
         // parent::boot();
     }
 

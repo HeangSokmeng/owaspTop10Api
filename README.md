@@ -69,9 +69,11 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
             example :<br/>
             $validator = Validator::make($req->all(), ['password' => 'required|string',]);<br/>
             ![alt text](image-6.png)<br/>
+            ![alt text](image-13.png)<br/>
+            ![alt text](image-14.png)
 
             sulotion<br/>
-            example :<br/>
+            example validate form when user register:<br/>
             $validator = Validator::make($req->all(), [
                 'password' => [
                     'required',
@@ -104,6 +106,41 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
             example :<br/>
             Route::middleware('throttle:daily-limit')->post('/login', [UserController::class, 'loginSecure']);<br/>
             ![alt text](image-11.png)
+
+        4. **Test**: Doesn't generate a secret key but uses a custom secret key
+            - To fix: Use a secure secret key by commands in laravel:
+                - composer require tymon/jwt-auth
+                - php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+                - php artisan jwt:secret
+                - php artisan config:clear
+            - Example Attacks
+                - command : hashcat -a 0 -m 16500 token.txt jwt.secrets.list
+                - wordList : https://github.com/wallarm/jwt-secrets/tree/master
+                ![alt text](image-12.png)
+
+        5. **Test**: Doesn't validate the JWT expiration date.
+            - Problems with Non-Expiring JWTs
+                - Token Theft Risk
+                        If someone steals the token (e.g. from local storage, logs, intercepted traffic), and the token never expires, they can access the system forever without re-authentication.
+                - No Revocation
+                    - JWTs are stateless — the server doesn’t store them. That means:
+                    - You can’t invalidate a token after issuing it.
+                    - Even if a user logs out, the token still works unless it's manually blacklisted.
+                - Brute Force Vulnerability
+                    - Access your system without login
+            - Solution
+                - in .env
+                    JWT_TTL=120   //120 = 2h
+                - in config/jwt.php
+                    'ttl' => env('JWT_TTL', 60), or  'ttl' => (int) env('JWT_TTL', 60),
+                - command: 
+                    - php artisan config:clear
+                    - php artisan cache:clear
+                    - php artisan config:cache
+
+         5. **Test**: Doesn't validate the JWT expiration date.
+
+
 
 
     2. **Expected Fix**: Tokens should expire, be signed securely, and verified on each request.
