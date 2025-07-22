@@ -139,7 +139,7 @@ const activeFilter = ref('All')
 const showFab = ref(false)
 
 // API base URL
-const API_BASE_URL = 'http://192.168.1.201:8000/api'
+const API_BASE_URL = 'http://192.168.18.53:8000/api'
 
 // Computed properties
 const filteredProducts = computed(() => {

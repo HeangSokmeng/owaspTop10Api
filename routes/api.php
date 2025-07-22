@@ -34,10 +34,9 @@ Route::middleware('isLoggin')->group(function () {
 
 });
 
-Route::prefix('view')->group(function () {
+Route::middleware(['throttle:api-progressive', 'block-malicious-ips'])->prefix('view')->group(function () {
     Route::prefix('product')->group(function () {
         Route::post('', [ProductController::class, 'store']);
         Route::get('', [ProductController::class, 'index']);
     });
-
 });
