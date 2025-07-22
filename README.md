@@ -144,7 +144,7 @@ OWASP API Security Top 10 – Vulnerabilities with Examples
 
 
 
- 3. Excessive Data Exposure
+    <h2> 3. Excessive Data Exposure </h2>
 
     ![alt text](image-20.png)
     
