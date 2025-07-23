@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'jwtAuth' => awtAuth::class,
             'isLoggin' => isLoggin::class,
-            'block-malicious-ips' => BlockMaliciousIP::class,
+            'block-malicious-ips' => \App\Http\Middleware\BlockMaliciousIP::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -22,19 +22,16 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        RateLimiter::for('api-progressive', function (Request $request) {
-            return Limit::perMinute(60)
+        RateLimiter::for('progressive', function (Request $request) {
+            return Limit::perMinute(5)
                 ->by($request->ip())
                 ->response(function () {
-                    $retryAfter = 60; // seconds
+                    $retryAfter = 5; // seconds
                     return response()->json([
                         'message' => 'Too many requests. Try again later.'
                     ], 429)->header('Retry-After', $retryAfter);
                 });
         });
-
-
-        // parent::boot(); // keep this if you're extending the base class
     }
 
 }

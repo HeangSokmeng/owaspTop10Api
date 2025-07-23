@@ -217,115 +217,136 @@ Table of Contents
 
    **Expected Fix in this case**: Only return needed fields in responses.
 
----
 
+---
 ## 4. Lack of Resources & Rate Limiting
 
 ![alt text](image-21.png)
 
---Exploitation requires simple API requests. No authentication is required. Multiple concurrent requests can be performed from a single local computer or by using cloud computing resources.
---Exploitation may lead to DoS, making the API unresponsive or even unavailable.
-    ```
-        No Rate Limiting on Login Endpoint:
-            Allows brute force or credential stuffing attacks
-        No Limit on Search Results:
-            A user sends a query and retrieves 1 million records, crashing the system or exposing data.
-        No Upload Size Restriction:
-            A user uploads a 5GB file, overloading disk or memory.
-        No Concurrent Session Control:
-            One user opens 500 parallel sessions to over-consume bandwidth.
-    ```
+-- Exploitation requires simple API requests. No authentication is required. Multiple concurrent requests can be performed from a single local computer or by using cloud computing resources.
+-- Exploitation may lead to DoS, making the API unresponsive or even unavailable.
+
+```
+No Rate Limiting on Login Endpoint:
+    Allows brute force or credential stuffing attacks
+No Limit on Search Results:
+    A user sends a query and retrieves 1 million records, crashing the system or exposing data.
+No Upload Size Restriction:
+    A user uploads a 5GB file, overloading disk or memory.
+No Concurrent Session Control:
+    One user opens 500 parallel sessions to over-consume bandwidth.
+```
 
 1. **Test**: Send many requests quickly.
+
 2. **Example**:
    ```bash
    for i in {1..100}; do curl http://api.test.com/login; done
    ```
-    - not set limit rating
+   - not set limit rating
 
-        ![alt text](image-22.png)
+   ![alt text](image-22.png)
 
-    - write python script to attacks like ddos
+   - write python script to attacks like ddos
 
-        ![alt text](image-23.png)
+   ![alt text](image-23.png)
 
-        ```
-            {
-                "attack_summary": {
-                    "target_url": "http://192.168.18.53:8000/api/view/product",
-                    "attack_date": "2025-07-23T00:35:12.551121",
-                    "total_attacks": 214,
-                    "successful_attacks": 214,
-                    "rate_limited_attacks": 0,
-                    "server_errors": 0,
-                    "attack_duration": 115.3333535194397
-                },
-                "security_assessment": {
-                    "status": "[CRITICAL] CRITICALLY VULNERABLE",
-                    "risk_level": "CRITICAL",
-                    "rate_limit_effectiveness": 0.0,
-                    "success_rate": 1.0,
-                    "server_stability": 1.0
-                },
-                "attack_type_breakdown": {
-                    "API_SCRAPING": {
-                    "total_requests": 214,
-                    "success_rate": 1.0,
-                    "avg_response_time": 1635.4677699436652
-                    }
-                },
-                "recommendations": [
-                    "[CRITICAL] Implement aggressive rate limiting (Laravel throttle middleware)",
-                    "[CONFIG] Set strict limits: 60 requests/minute per IP for API endpoints",
-                    "[SECURITY] Implement progressive rate limiting with exponential backoff",
-                    "[BLOCKING] Add IP blocking for repeated violations (fail2ban style)",
-                    "[MONITORING] Deploy real-time monitoring and alerting for attack patterns",
-                    "[WAF] Deploy Web Application Firewall (WAF) with API protection",
-                    "[DETECTION] Implement behavioral analysis for attack detection",
-                    "[TESTING] Regular security testing and penetration testing",
-                    "[RESPONSE] Set up incident response procedures for API attacks",
-                    "[AUTH] Consider API authentication and authorization improvements"
-                ]
-            } ```
-            
+   ```json
+   {
+       "attack_summary": {
+           "target_url": "http://192.168.18.53:8000/api/view/product",
+           "attack_date": "2025-07-23T00:35:12.551121",
+           "total_attacks": 214,
+           "successful_attacks": 214,
+           "rate_limited_attacks": 0,
+           "server_errors": 0,
+           "attack_duration": 115.3333535194397
+       },
+       "security_assessment": {
+           "status": "[CRITICAL] CRITICALLY VULNERABLE",
+           "risk_level": "CRITICAL",
+           "rate_limit_effectiveness": 0.0,
+           "success_rate": 1.0,
+           "server_stability": 1.0
+       },
+       "attack_type_breakdown": {
+           "API_SCRAPING": {
+           "total_requests": 214,
+           "success_rate": 1.0,
+           "avg_response_time": 1635.4677699436652
+           }
+       },
+       "recommendations": [
+           "[CRITICAL] Implement aggressive rate limiting (Laravel throttle middleware)",
+           "[CONFIG] Set strict limits: 60 requests/minute per IP for API endpoints",
+           "[SECURITY] Implement progressive rate limiting with exponential backoff",
+           "[BLOCKING] Add IP blocking for repeated violations (fail2ban style)",
+           "[MONITORING] Deploy real-time monitoring and alerting for attack patterns",
+           "[WAF] Deploy Web Application Firewall (WAF) with API protection",
+           "[DETECTION] Implement behavioral analysis for attack detection",
+           "[TESTING] Regular security testing and penetration testing",
+           "[RESPONSE] Set up incident response procedures for API attacks",
+           "[AUTH] Consider API authentication and authorization improvements"
+       ]
+   }
+   ```
+
+   - If a login endpoint does not implement rate limiting, it becomes highly vulnerable to brute-force attacks — where an attacker tries a huge number of password combinations to gain access.
+
+   ![alt text](image-34.png)
+
+   - without middleware
+
+   ```php
+   Route::post('/login', [UserController::class, 'loginSecure']);
+   ```
+
 3. **Expected Fix**: Apply rate limits per IP or user token
-    - set limit rating
+   - set limit rating
 
-        ![alt text](image-25.png)
-        ![alt text](image-26.png)
+   ![alt text](image-25.png)
+   ![alt text](image-26.png)
 
-    - write python script to attacks like ddos
+   - write python script to attacks like ddos
 
-        ![alt text](image-27.png)
+   ![alt text](image-27.png)
 
-        ``` 
-            "attack_summary": {
-                "target_url": "http://192.168.18.53:8000/api/view/product",
-                "attack_date": "2025-07-23T01:03:18.883586",
-                "total_attacks": 336,
-                "successful_attacks": 120,
-                "rate_limited_attacks": 216,
-                "server_errors": 0,
-                "attack_duration": 138.8990457057953
-            },
-            "security_assessment": {
-                "status": "[WARNING] MODERATELY PROTECTED",
-                "risk_level": "MEDIUM",
-                "rate_limit_effectiveness": 0.6428571428571429,
-                "success_rate": 0.35714285714285715,
-                "server_stability": 1.0
-            },
-            "attack_type_breakdown": {
-                "API_SCRAPING": {
-                "total_requests": 336,
-                "success_rate": 0.35714285714285715,
-                "avg_response_time": 1198.6441626435235
-                }
-            }, ```
+   ```json
+   "attack_summary": {
+       "target_url": "http://192.168.18.53:8000/api/view/product",
+       "attack_date": "2025-07-23T01:03:18.883586",
+       "total_attacks": 336,
+       "successful_attacks": 120,
+       "rate_limited_attacks": 216,
+       "server_errors": 0,
+       "attack_duration": 138.8990457057953
+   },
+   "security_assessment": {
+       "status": "[WARNING] MODERATELY PROTECTED",
+       "risk_level": "MEDIUM",
+       "rate_limit_effectiveness": 0.6428571428571429,
+       "success_rate": 0.35714285714285715,
+       "server_stability": 1.0
+   },
+   "attack_type_breakdown": {
+       "API_SCRAPING": {
+       "total_requests": 336,
+       "success_rate": 0.35714285714285715,
+       "avg_response_time": 1198.6441626435235
+       }
+   }
+   ```
+
+   - with middleware
+   ```php
+   Route::post('/login', [UserController::class, 'loginSecure'])->middleware(['block-malicious-ips']);
+   ```
+   ![alt text](image-35.png)
+
+   - status 429 : thats mean "Too Many Requests", indicates that a client has sent too many requests to a server in a given amount of time, exceeding the server's rate limits. Essentially, the server is telling the client to slow down. This is a common mechanism used to prevent abuse or overloading of servers and APIs.
 
 
----
-
+--
 ## 5. Broken Function Level Authorization
 
 ![alt text](image-28.png)

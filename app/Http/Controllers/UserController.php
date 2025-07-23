@@ -7,7 +7,10 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -118,40 +121,67 @@ class UserController extends Controller
     }
 
     public function loginSecure(Request $req)
-    {
-        // Validate input
-        $validate = Validator::make($req->only(['email', 'password']), [
-            'email' => 'required|string',
-            'password' => [
-                'required',
-                // 'string',
-                // 'min:8',
-                // 'regex:/[a-z]/',
-                // 'regex:/[A-Z]/',
-                // 'regex:/[0-9]/',
-                // 'regex:/[@$!%*?&#]/'
-            ],
-        ]);
-        if ($validate->fails())
-            return ApiResponse::ValidateFail($validate->errors()->all());
-        $credentials = $validate->validated();
-        $account = strtolower($credentials['email']);
-        $password = $credentials['password'];
-        $user = User::where(function ($q) use ($account) {
-            $q->whereRaw('LOWER(email) = ?', [$account])
-                ->orWhereRaw('LOWER(name) = ?', [$account]);
-        })->first();
-        if (!$user || !password_verify($password, $user->password))
-            return ApiResponse::NotFound('Invalid email or password');
-        if (!$token = JWTAuth::fromUser($user))
-            return ApiResponse::ValidateFail('Could not create token');
-        $user->roles = UserService::getRolesByUsers($user->id);
-        $data = (object) [
-            'email' => $user->email,
-            'name' => $user->name,
-            'roles' => $user->roles,
-            'token' => $token,
-        ];
-        return ApiResponse::JsonResult($data, 'Login successful.');
+{
+    $ip = $req->ip();
+
+    // Validate input
+    $validate = Validator::make($req->only(['email', 'password']), [
+        'email' => 'required|string',
+        'password' => [
+            'required',
+            // 'string',
+            // 'min:8',
+            // 'regex:/[a-z]/',
+            // 'regex:/[A-Z]/',
+            // 'regex:/[0-9]/',
+            // 'regex:/[@$!%*?&#]/'
+        ],
+    ]);
+
+    if ($validate->fails())
+        return ApiResponse::ValidateFail($validate->errors()->all());
+
+    $credentials = $validate->validated();
+    $account = strtolower($credentials['email']);
+    $password = $credentials['password'];
+
+    $user = User::where(function ($q) use ($account) {
+        $q->whereRaw('LOWER(email) = ?', [$account])
+            ->orWhereRaw('LOWER(name) = ?', [$account]);
+    })->first();
+
+    // Check credentials
+    if (!$user || !password_verify($password, $user->password)) {
+        // FAILED LOGIN - just log it, rate limiter already incremented in middleware
+        $key = "login_attempts:{$ip}";
+        $attempts = RateLimiter::attempts($key);
+        Log::warning("Failed login attempt #{$attempts} for {$account} from IP {$ip}");
+
+        return ApiResponse::NotFound('Invalid email or password');
     }
+
+    // SUCCESSFUL LOGIN - Clear rate limiter
+    $key = "login_attempts:{$ip}";
+    RateLimiter::clear($key);
+
+    // Also clear any temporary blocks
+    Cache::forget("blocked_ip:{$ip}");
+
+    if (!$token = JWTAuth::fromUser($user)) {
+        return ApiResponse::ValidateFail('Could not create token');
+    }
+
+    $user->roles = UserService::getRolesByUsers($user->id);
+
+    $data = (object) [
+        'email' => $user->email,
+        'name' => $user->name,
+        'roles' => $user->roles,
+        'token' => $token,
+    ];
+
+    Log::info("Successful login for {$account} from IP {$ip}");
+
+    return ApiResponse::JsonResult($data, 'Login successful.');
+}
 }
