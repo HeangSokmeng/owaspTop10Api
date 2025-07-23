@@ -1,134 +1,155 @@
 <template>
   <div class="customer-product-container">
-    <!-- Hero Header -->
-    <div class="hero-header">
-      <div class="hero-content">
-        <h1 class="hero-title">Our Products</h1>
-        <p class="hero-subtitle">Discover amazing products crafted just for you</p>
-        <button @click="fetchProducts" class="refresh-btn" :disabled="loading">
-          <svg v-if="loading" class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12a9 9 0 11-6.219-8.56"/>
-          </svg>
-          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-            <path d="M21 3v5h-5"/>
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-            <path d="M3 21v-5h5"/>
-          </svg>
-          <span>{{ loading ? 'Refreshing...' : 'Refresh' }}</span>
-        </button>
-      </div>
-      <div class="hero-decoration">
-        <div class="decoration-circle"></div>
-        <div class="decoration-circle"></div>
-        <div class="decoration-circle"></div>
-      </div>
-    </div>
+    <!-- Show Product Detail View -->
+    <ProductDetail
+      v-if="showProductDetail"
+      :productId="selectedProductId"
+      :productData="selectedProduct"
+      @back="closeProductDetail"
+    />
 
-    <!-- Search and Filter Bar -->
-    <div class="search-filter-bar">
-      <div class="search-box">
-        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input
-          type="text"
-          placeholder="Search products..."
-          v-model="searchQuery"
-          class="search-input"
-        />
-      </div>
-      <div class="filter-buttons">
-        <button
-          v-for="filter in ['All', 'Featured', 'New', 'Popular']"
-          :key="filter"
-          @click="activeFilter = filter"
-          :class="['filter-btn', { active: activeFilter === filter }]"
-        >
-          {{ filter }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="loading && products.length === 0" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>Loading amazing products...</p>
-    </div>
-
-    <!-- Error State -->
-    <div v-if="error" class="error-state">
-      <div class="error-icon">⚠️</div>
-      <h3>Oops! Something went wrong</h3>
-      <p>{{ error }}</p>
-      <button @click="fetchProducts" class="retry-btn">Try Again</button>
-    </div>
-
-    <!-- Products Grid -->
-    <div v-if="!loading && filteredProducts.length > 0" class="products-grid">
-      <div
-        v-for="product in filteredProducts"
-        :key="product.id"
-        class="product-card"
-        @click="viewProduct(product)"
-      >
-        <div class="product-image">
-          <div class="product-placeholder">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <circle cx="9" cy="9" r="2"/>
-              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+    <!-- Show Product List View -->
+    <div v-else>
+      <!-- Hero Header -->
+      <div class="hero-header">
+        <div class="hero-content">
+          <h1 class="hero-title">Our Products</h1>
+          <p class="hero-subtitle">Discover amazing products crafted just for you</p>
+          <button @click="fetchProducts" class="refresh-btn" :disabled="loading">
+            <svg v-if="loading" class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 11-6.219-8.56"/>
             </svg>
-          </div>
-          <div class="product-badge">New</div>
+            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M3 21v-5h5"/>
+            </svg>
+            <span>{{ loading ? 'Refreshing...' : 'Refresh' }}</span>
+          </button>
         </div>
+        <div class="hero-decoration">
+          <div class="decoration-circle"></div>
+          <div class="decoration-circle"></div>
+          <div class="decoration-circle"></div>
+        </div>
+      </div>
 
-        <div class="product-info">
-          <h3 class="product-title">{{ product.title }}</h3>
-          <p class="product-name">{{ product.name }}</p>
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-bar">
+        <div class="search-box">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search products..."
+            v-model="searchQuery"
+            class="search-input"
+          />
+        </div>
+        <div class="filter-buttons">
+          <button
+            v-for="filter in ['All', 'Featured', 'New', 'Popular']"
+            :key="filter"
+            @click="activeFilter = filter"
+            :class="['filter-btn', { active: activeFilter === filter }]"
+          >
+            {{ filter }}
+          </button>
+        </div>
+      </div>
 
+      <!-- Loading State -->
+      <div v-if="loading && products.length === 0" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading amazing products...</p>
+      </div>
 
-          <div class="product-actions">
-            <button @click.stop="addToWishlist(product)" class="wishlist-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      <!-- Error State -->
+      <div v-if="error" class="error-state">
+        <div class="error-icon">⚠️</div>
+        <h3>Oops! Something went wrong</h3>
+        <p>{{ error }}</p>
+        <button @click="fetchProducts" class="retry-btn">Try Again</button>
+      </div>
+
+      <!-- Products Grid -->
+      <div v-if="!loading && filteredProducts.length > 0" class="products-grid">
+        <div
+          v-for="product in filteredProducts"
+          :key="product.id"
+          class="product-card"
+          @click="viewProduct(product)"
+        >
+          <div class="product-image">
+            <div class="product-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
               </svg>
-            </button>
-            <button @click.stop="addToCart(product)" class="cart-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="8" cy="21" r="1"/>
-                <circle cx="19" cy="21" r="1"/>
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L20.05 7H5.12"/>
-              </svg>
-              Add to Cart
-            </button>
+            </div>
+            <div class="product-badge">New</div>
+          </div>
+
+          <div class="product-info">
+            <h3 class="product-title">{{ product.title }}</h3>
+            <p class="product-name">{{ product.name }}</p>
+
+            <div class="product-meta">
+              <div class="creator-info">
+                <div class="creator-avatar">
+                  {{ getInitials(product.user?.name || 'Unknown') }}
+                </div>
+                <span class="creator-name">{{ product.user?.name || 'Unknown Creator' }}</span>
+              </div>
+              <span class="product-date">{{ formatDate(product.created_at) }}</span>
+            </div>
+
+            <div class="product-actions">
+              <button @click.stop="addToWishlist(product)" class="wishlist-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </button>
+              <button @click.stop="addToCart(product)" class="cart-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="8" cy="21" r="1"/>
+                  <circle cx="19" cy="21" r="1"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L20.05 7H5.12"/>
+                </svg>
+                Add to Cart
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Empty State -->
-    <div v-if="!loading && filteredProducts.length === 0 && !error" class="empty-state">
-      <div class="empty-icon">📦</div>
-      <h3>No products found</h3>
-      <p v-if="searchQuery">Try adjusting your search terms</p>
-      <p v-else>Check back soon for new products!</p>
-      <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">Clear Search</button>
-    </div>
+      <!-- Empty State -->
+      <div v-if="!loading && filteredProducts.length === 0 && !error" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No products found</h3>
+        <p v-if="searchQuery">Try adjusting your search terms</p>
+        <p v-else>Check back soon for new products!</p>
+        <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">Clear Search</button>
+      </div>
 
-    <!-- Floating Action Button -->
-    <button class="fab" @click="scrollToTop" v-show="showFab">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 15l-6-6-6 6"/>
-      </svg>
-    </button>
+      <!-- Floating Action Button -->
+      <button class="fab" @click="scrollToTop" v-show="showFab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 15l-6-6-6 6"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import axios from 'axios'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import axios from 'axios';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import ProductDetail from './ProductDetail.vue'; // Import the detail component
 
 // Reactive data
 const products = ref([])
@@ -138,8 +159,13 @@ const searchQuery = ref('')
 const activeFilter = ref('All')
 const showFab = ref(false)
 
+// Product detail view state
+const showProductDetail = ref(false)
+const selectedProductId = ref(null)
+const selectedProduct = ref(null)
+
 // API base URL
-const API_BASE_URL = 'http://192.168.18.53:8000/api'
+const API_BASE_URL = 'http://192.168.1.48:8000/api'
 
 // Computed properties
 const filteredProducts = computed(() => {
@@ -151,7 +177,7 @@ const filteredProducts = computed(() => {
     filtered = filtered.filter(product =>
       product.name.toLowerCase().includes(query) ||
       product.title.toLowerCase().includes(query) ||
-      product.user.name.toLowerCase().includes(query)
+      (product.user?.name || '').toLowerCase().includes(query)
     )
   }
 
@@ -195,20 +221,30 @@ const formatDate = (dateString) => {
   })
 }
 
+// Get initials for avatar
+const getInitials = (name) => {
+  if (!name) return 'U'
+  return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)
+}
+
 // Action handlers
 const viewProduct = (product) => {
-  console.log('View product:', product)
-  // Navigate to product detail page
-  alert(`Viewing product: ${product.title}`)
+  selectedProductId.value = product.id
+  selectedProduct.value = product
+  showProductDetail.value = true
+}
+
+const closeProductDetail = () => {
+  showProductDetail.value = false
+  selectedProductId.value = null
+  selectedProduct.value = null
 }
 
 const addToWishlist = (product) => {
-  console.log('Add to wishlist:', product)
   alert(`${product.title} added to wishlist!`)
 }
 
 const addToCart = (product) => {
-  console.log('Add to cart:', product)
   alert(`${product.title} added to cart!`)
 }
 

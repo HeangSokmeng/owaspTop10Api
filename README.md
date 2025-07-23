@@ -287,7 +287,8 @@ Table of Contents
                     "[AUTH] Consider API authentication and authorization improvements"
                 ]
             } ```
-
+            
+3. **Expected Fix**: Apply rate limits per IP or user token
     - set limit rating
 
         ![alt text](image-25.png)
@@ -323,18 +324,97 @@ Table of Contents
             }, ```
 
 
-3. **Expected Fix**: Apply rate limits per IP or user token
-
 ---
 
 ## 5. Broken Function Level Authorization
 
+![alt text](image-28.png)
+
+-- Exploitation requires the attacker to send legitimate API calls to an API endpoint that they should not have access to as anonymous users or regular, non-privileged users. Exposed endpoints will be easily exploited.
+-- Such flaws allow attackers to access unauthorized functionality. Administrative functions are key targets for this type of attack and may lead to data disclosure, data loss, or data corruption. Ultimately, it may lead to service disruption.
+
 1. **Test**: Use a lower-permission token to access admin actions.
+
 2. **Example**
    ```http
    DELETE /api/admin/delete-user/123 ← with normal user token
    ```
+   ![alt text](image-29.png)
+
+   ![alt text](image-30.png)
+
+   ![alt text](image-31.png)
+
+   **Issue:**
+   - **No middleware to check role permissions**
+     - Routes (e.g., DELETE /api/view/product/{id}) are exposed without checking if the user has permission (e.g., is an admin).
+   - **Returning routes or data that shouldn't be accessible**
+     - Sensitive routes are accessible to all authenticated users or even unauthenticated users.
+   - **Missing role-based logic inside controllers**
+     - Example: No checks inside ProductController@destroy to confirm if the user is allowed to delete.
+
+   **Example**
+   ```php
+   Route::prefix('view')->group(function () {
+       Route::prefix('product')->group(function () {
+           Route::post('', [ProductController::class, 'store']);
+           Route::get('', [ProductController::class, 'index']);
+           Route::get('/{id}', [ProductController::class, 'show']);
+           Route::put('/{id}', [ProductController::class, 'update']);
+           Route::delete('/{id}', [ProductController::class, 'destroy']);
+       });
+   });
+   ```
+
 3. **Expected Fix**: Check user roles/permissions in the backend.
+
+   **Fix**
+
+   - **1. Use Middleware to Enforce Role Permissions**
+     - Create a middleware to check for role
+       ```bash
+       php artisan make:middleware jwtAuth
+       ```
+
+       ```php
+       Route::prefix('view')->group(function () {
+           Route::prefix('product')->group(function () {
+               Route::get('', [ProductController::class, 'index']);
+               Route::get('/{id}', [ProductController::class, 'show']);
+
+               Route::middleware('isLoggin')->post('', [ProductController::class, 'store']);
+               Route::middleware('jwtAuth')->put('/{id}', [ProductController::class, 'update']);
+               Route::middleware('jwtAuth')->delete('/{id}', [ProductController::class, 'destroy']);
+           });
+       });
+       ```
+
+   - **2. Restrict Sensitive Routes**
+     - Remove or disable routes you don't want exposed
+     - If in frontend display list of products and product details only
+
+       ```php
+       Route::prefix('view')->group(function () {
+           Route::prefix('product')->group(function () {
+               Route::get('', [ProductController::class, 'index']);
+               Route::get('/{id}', [ProductController::class, 'show']);
+
+               // Route::middleware('isLoggin')->post('', [ProductController::class, 'store']);
+               // Route::middleware('jwtAuth')->put('/{id}', [ProductController::class, 'update']);
+               // Route::middleware('jwtAuth')->delete('/{id}', [ProductController::class, 'destroy']);
+           });
+       });
+       ```
+
+   - **3. Add In-Controller Authorization Logic (optional fallback)**
+     - In case someone bypasses middleware
+     - Example in update or delete
+       ```php
+       $user = UserService::getAuthUser();
+       $product = Product::where('user_id', $user->id)->find($id);
+       ```
+
+   ![alt text](image-32.png)
 
 ---
 

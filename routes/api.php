@@ -34,9 +34,19 @@ Route::middleware('isLoggin')->group(function () {
 
 });
 
-Route::middleware(['throttle:api-progressive', 'block-malicious-ips'])->prefix('view')->group(function () {
+// Route::middleware(['throttle:api-progressive', 'block-malicious-ips'])->prefix('view')->group(function () {
+//     Route::prefix('product')->group(function () {
+//         Route::post('', [ProductController::class, 'store']);
+//         Route::get('', [ProductController::class, 'index']);
+//     });
+// });
+Route::prefix('view')->group(function () {
     Route::prefix('product')->group(function () {
-        Route::post('', [ProductController::class, 'store']);
         Route::get('', [ProductController::class, 'index']);
+        Route::get('/{id}', [ProductController::class, 'show']);
+
+        Route::middleware('isLoggin')->post('', [ProductController::class, 'store']);
+        Route::middleware('jwtAuth')->put('/{id}', [ProductController::class, 'update']);
+        Route::middleware('jwtAuth')->delete('/{id}', [ProductController::class, 'destroy']);
     });
 });

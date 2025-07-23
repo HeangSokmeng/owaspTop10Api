@@ -52,7 +52,8 @@ class ProductController extends Controller
     // DELETE /api/products/{id}
     public function destroy($id)
     {
-        $product = Product::find($id);
+        $user = UserService::getAuthUser();
+        $product = Product::where('user_id', $user->id)->find($id);
         if (!$product)  return response()->json(['message' => 'Product not found'], 404);
         $product->delete();
         return response()->json(['message' => 'Product deleted'], 200);
