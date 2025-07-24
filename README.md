@@ -475,6 +475,8 @@ No Concurrent Session Control:
 
 ## 8. Injection (SQL, NoSQL, Command Injection)
 
+![alt text](image-44.png)
+
 -- Attackers will feed the API with malicious data through whatever injection vectors are available (e.g., direct input, parameters, integrated services, etc.), expecting it to be sent to an interpreter.
 -- Injection can lead to information disclosure and data loss. It may also lead to DoS, or complete host takeover.
 -- What is Injection?
@@ -560,6 +562,8 @@ No Concurrent Session Control:
 
 ## 9. Improper Asset Management
 
+![alt text](image-45.png)
+
 -- Improper asset management refers to exposing non-production endpoints (e.g., staging, debug routes, old versions) or failing to track exposed APIs, which attackers can exploit to access sensitive data or functionality.
 
 1. **Test**: Discover unused or old versions of APIs.
@@ -628,6 +632,8 @@ No Concurrent Session Control:
 ---
 
 ## 10. Insufficient Logging & Monitoring
+
+![alt text](image-46.png)
 
 -- Attackers take advantage of lack of logging and monitoring to abuse systems without being noticed.
 -- Without visibility over on-going malicious activities, attackers have plenty of time to fully compromise systems.
