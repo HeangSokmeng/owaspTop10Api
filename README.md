@@ -24,7 +24,7 @@ Table of Contents
 
 2. **Example Attack**
 
-   1. `GET /api/users/19/profile` ← your own
+   1. `GET /api/users/19/profile` ← r own
    2. `GET /api/users/20/profile` ← another user's
 
       **The issue:**
@@ -32,7 +32,7 @@ Table of Contents
 
    **Similarly:**
 
-   1. `GET /api/users/19/orders` ← your own
+   1. `GET /api/users/19/orders` ← r own
    2. `GET /api/users/19/wishlist` – This should return only the logged-in user's wishlist (e.g., their favorite products or categories).
    3. `GET /api/users/20/wishlist` – This incorrectly allows the logged-in user (with id = 19) to access another user's wishlist.
 
@@ -166,10 +166,10 @@ Table of Contents
          If someone steals the token (e.g. from local storage, logs, intercepted traffic), and the token never expires, they can access the system forever without re-authentication.
        - **No Revocation**
          - JWTs are stateless — the server doesn't store them. That means:
-         - You can't invalidate a token after issuing it.
+         -  can't invalidate a token after issuing it.
          - Even if a user logs out, the token still works unless it's manually blacklisted.
        - **Brute Force Vulnerability**
-         - Access your system without login
+         - Access r system without login
      - **Solution**
        - in .env
          ```env
@@ -411,7 +411,7 @@ No Concurrent Session Control:
        ```
 
    - **2. Restrict Sensitive Routes**
-     - Remove or disable routes you don't want exposed
+     - Remove or disable routes  don't want exposed
      - If in frontend display list of products and product details only
 
        ```php
@@ -443,10 +443,10 @@ No Concurrent Session Control:
 
 ![alt text](image-36.png)
 
--- Exploitation of mass assignment is easier in APIs, since by design they expose the underlying implementation of the application along with the properties' names.
--- Exploitation may lead to privilege escalation, data tampering, bypass of security mechanisms, and more.
--- Why is Mass Assignment a Security Risk?
-   -- If you're not careful, attackers can submit unexpected fields, like is_admin, role, or balance, and elevate privileges or manipulate data.
+- Exploitation of mass assignment is easier in APIs, since by design they expose the underlying implementation of the application along with the properties' names.
+- Exploitation may lead to privilege escalation, data tampering, bypass of security mechanisms, and more.
+- Why is Mass Assignment a Security Risk?
+- If 're not careful, attackers can submit unexpected fields, like is_admin, role, or balance, and elevate privileges or manipulate data.
 
 1. **Test**: Try sending extra parameters in the request.
 
@@ -477,13 +477,13 @@ No Concurrent Session Control:
 
 ![alt text](image-44.png)
 
--- Attackers will feed the API with malicious data through whatever injection vectors are available (e.g., direct input, parameters, integrated services, etc.), expecting it to be sent to an interpreter.
--- Injection can lead to information disclosure and data loss. It may also lead to DoS, or complete host takeover.
--- What is Injection?
-   Injection occurs when:
-   - The API takes untrusted data (e.g., from user input),
-   - Sends it to an interpreter (like a SQL engine, NoSQL query, or shell),
-   - And the interpreter executes the commands without proper sanitization.
+- Attackers will feed the API with malicious data through whatever injection vectors are available (e.g., direct input, parameters, integrated services, etc.), expecting it to be sent to an interpreter.
+- Injection can lead to information disclosure and data loss. It may also lead to DoS, or complete host takeover.
+- What is Injection?
+   - Injection occurs when:
+    - The API takes untrusted data (e.g., from user input),
+    - Sends it to an interpreter (like a SQL engine, NoSQL query, or shell),
+    - And the interpreter executes the commands without proper sanitization.
 
 1. **Test**: Try sending injection payloads.
 
@@ -594,7 +594,7 @@ No Concurrent Session Control:
 3. **Fix**: Keep inventory and disable old or unmaintained endpoints.
    
    **Defense Strategies**
-   - Inventory your APIs: Use API gateways or asset management tools.
+   - Inventory r APIs: Use API gateways or asset management tools.
    - Restrict access to non-production environments (use auth, IP whitelisting).
    - Remove deprecated/legacy endpoints.
    - Version management: Make sure old versions are retired or secured.
