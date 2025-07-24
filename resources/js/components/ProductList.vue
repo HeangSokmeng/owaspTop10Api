@@ -98,7 +98,7 @@
             <h3 class="product-title">{{ product.title }}</h3>
             <p class="product-name">{{ product.name }}</p>
 
-            <div class="product-meta">
+            <!-- <div class="product-meta">
               <div class="creator-info">
                 <div class="creator-avatar">
                   {{ getInitials(product.user?.name || 'Unknown') }}
@@ -106,7 +106,7 @@
                 <span class="creator-name">{{ product.user?.name || 'Unknown Creator' }}</span>
               </div>
               <span class="product-date">{{ formatDate(product.created_at) }}</span>
-            </div>
+            </div> -->
 
             <div class="product-actions">
               <button @click.stop="addToWishlist(product)" class="wishlist-btn">
@@ -147,10 +147,9 @@
 </template>
 
 <script setup>
-import axios from 'axios';
+import api from '@/api';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import ProductDetail from './ProductDetail.vue'; // Import the detail component
-
 // Reactive data
 const products = ref([])
 const loading = ref(false)
@@ -165,7 +164,7 @@ const selectedProductId = ref(null)
 const selectedProduct = ref(null)
 
 // API base URL
-const API_BASE_URL = 'http://192.168.1.48:8000/api'
+const API_BASE_URL = api
 
 // Computed properties
 const filteredProducts = computed(() => {
@@ -196,7 +195,7 @@ const fetchProducts = async () => {
   error.value = null
 
   try {
-    const response = await axios.get(`${API_BASE_URL}/view/product`)
+    const response = await api.get(`/view/product`)
 
     if (response.data.error === false && response.data.status === 'OK') {
       products.value = response.data.data

@@ -441,7 +441,15 @@ No Concurrent Session Control:
 
 ## 6. Mass Assignment
 
+![alt text](image-36.png)
+
+-- Exploitation of mass assignment is easier in APIs, since by design they expose the underlying implementation of the application along with the properties' names.
+-- Exploitation may lead to privilege escalation, data tampering, bypass of security mechanisms, and more.
+-- Why is Mass Assignment a Security Risk?
+   -- If you're not careful, attackers can submit unexpected fields, like is_admin, role, or balance, and elevate privileges or manipulate data.
+
 1. **Test**: Try sending extra parameters in the request.
+
 2. **Example**:
    ```json
    {
@@ -449,6 +457,7 @@ No Concurrent Session Control:
       "isAdmin": true
    }
    ```
+
 3. **Expected Fix**: Use whitelisting to control which fields can be updated.
 
 ---
@@ -459,13 +468,23 @@ No Concurrent Session Control:
    - Stack traces in error
    - Missing security headers
    - Open CORS policy (`Access-Control-Allow-Origin: *`)
+
 2. **Fix**: Sanitize errors, use CSP headers, and configure CORS strictly.
 
 ---
 
 ## 8. Injection (SQL, NoSQL, Command Injection)
 
+-- Attackers will feed the API with malicious data through whatever injection vectors are available (e.g., direct input, parameters, integrated services, etc.), expecting it to be sent to an interpreter.
+-- Injection can lead to information disclosure and data loss. It may also lead to DoS, or complete host takeover.
+-- What is Injection?
+   Injection occurs when:
+   - The API takes untrusted data (e.g., from user input),
+   - Sends it to an interpreter (like a SQL engine, NoSQL query, or shell),
+   - And the interpreter executes the commands without proper sanitization.
+
 1. **Test**: Try sending injection payloads.
+
 2. **Example**
    ```json
    {
@@ -473,22 +492,151 @@ No Concurrent Session Control:
       "password": "anything"
    }
    ```
+   
+   Here is an example this function is vulnerable to SQL Injection because it directly inserts user input into a raw SQL query without any sanitization or binding.
+   
+   ```php
+   public function getProfileCanInject(Request $req, $id)
+   {
+       $user = DB::select("SELECT id, name, email FROM users WHERE id = $id LIMIT 1");
+       if ($user) {
+           $role = DB::select("SELECT role_id FROM user_roles WHERE user_id = $id LIMIT 1");
+           $user[0]->role_id = $role[0]->role_id ?? null;
+       }
+       return ApiResponse::JsonResult($user[0] ?? null);
+   }
+   ```
+
+   on code in line 
+   ```php
+   $user = DB::select("SELECT id, name, email FROM users WHERE id = $id LIMIT 1");
+   ``` 
+   it also result in the query sql like this:
+   ```sql
+   SELECT id, name, email FROM users WHERE id = 1 OR 1=1 LIMIT 1
+   ```
+
+   ![alt text](image-37.png)
+   ![alt text](image-38.png)
+
 3. **Expected Fix**: Use prepared statements and input validation
+   -- How to fix it securely:
+   -- Use parameter binding (prepared statements) instead:
+   ```php
+   $user = DB::select("SELECT id, name, email FROM users WHERE id = ? LIMIT 1", [$id]);
+   ```
+   -- Or, even better, use Eloquent:
+   ```php
+   public function getProfile(Request $req, $id)
+   {
+       // $authUser = UserService::getAuthUser();
+       // $id = $authUser->id;
+       $user = User::selectRaw('id, name,email')->find($id);
+       if ($user)
+           $user->role_id = UserRole::where('user_id', $id)->take(1)->value('role_id');
+       return ApiResponse::JsonResult($user);
+   }
+   ```
+   ![alt text](image-39.png)
 
 ---
 
 ## 9. Improper Asset Management
 
+-- Improper asset management refers to exposing non-production endpoints (e.g., staging, debug routes, old versions) or failing to track exposed APIs, which attackers can exploit to access sensitive data or functionality.
+
 1. **Test**: Discover unused or old versions of APIs.
+   
+   **How Attackers Discover These**
+   - Directory Fuzzing: Using tools like ffuf, dirsearch, gobuster
+   - Crawling Swagger / Postman / Insomnia shared docs
+   - GitHub Recon: Searching for .env, .json, .yml, or .http files
+   - Wayback Machine: Finding old API endpoints or docs
+   - Shodan or Censys: Discovering exposed staging/dev systems
+
 2. ```
    /api/v1/users
    /api/v2/users ← legacy, still active?
    ```
+   
+   **example**
+   ```php
+   Route::prefix('v1')->group(function () {
+       Route::prefix('profile')->group(function () {
+           Route::get('/{id}', [ProfileController::class, 'getProfile']);
+       });
+   });
+   ```
+   
+   ![alt text](image-40.png)
+
 3. **Fix**: Keep inventory and disable old or unmaintained endpoints.
+   
+   **Defense Strategies**
+   - Inventory your APIs: Use API gateways or asset management tools.
+   - Restrict access to non-production environments (use auth, IP whitelisting).
+   - Remove deprecated/legacy endpoints.
+   - Version management: Make sure old versions are retired or secured.
+   - Don't expose API documentation publicly.
+   - Sanitize error messages in production.
+   - Regularly scan for exposed endpoints and misconfigurations.
+
+   - if dont use it remove the old version or dont need remove just create middleware to check
+   - can create middleware for old endpoint api (check authenticator)
+   
+   ```php
+   Route::prefix('v1')->middleware('isLoggin')->group(function () {
+       Route::prefix('profile')->group(function () {
+           Route::put('/{id}', [ProfileController::class, 'update']);
+           Route::delete('/{id}', [ProfileController::class, 'delete']);
+           Route::get('/{id}', [ProfileController::class, 'getProfile']);
+       });
+   });
+   ```
+
+   **or**
+
+   ```php
+   // Route::prefix('v1')->middleware('isLoggin')->group(function () {
+   //     Route::prefix('profile')->group(function () {
+   //         Route::put('/{id}', [ProfileController::class, 'update']);
+   //         Route::delete('/{id}', [ProfileController::class, 'delete']);
+   //         Route::get('/{id}', [ProfileController::class, 'getProfile']);
+   //     });
+   // });
+   ```
+   
+   ![alt text](image-41.png)
 
 ---
 
 ## 10. Insufficient Logging & Monitoring
 
+-- Attackers take advantage of lack of logging and monitoring to abuse systems without being noticed.
+-- Without visibility over on-going malicious activities, attackers have plenty of time to fully compromise systems.
+-- It refers to the lack of proper logging and alerting mechanisms, which makes it difficult to detect, respond to, or even understand the impact of security breaches or suspicious activity.
+
+**Why Is It Dangerous?**
+- Without logging and monitoring:
+  - Attacks may go undetected for a long time (e.g., months).
+  - It becomes hard to investigate and respond to breaches.
+  - Forensics and root cause analysis are almost impossible.
+  - Compliance violations may occur (e.g., GDPR, HIPAA).
+    
 1. **Test**: Trigger errors or failed login attempts.
+   
+   **example of code**
+   
+   ![alt text](image-42.png)
+
 2. **Fix**: Ensure such events are logged and alerting is in place
+
+   ![alt text](image-43.png)
+   
+   - **Logging**: Log all authentication attempts, access control failures, permission changes, and errors.
+   - **Monitoring**: Use tools like SIEM (Security Information and Event Management) to monitor logs and detect anomalies.
+   - **Alerting**: Set up real-time alerts for critical actions (e.g., suspicious login, data export).
+   - **Retention**: Store logs securely and retain them based on legal and operational needs.
+   - **Access Control**: Protect logs from unauthorized access and tampering.
+   - **Review**: Conduct periodic audits and analysis of log data.
+   - **Correlation**: Correlate logs across services and layers (app, API, database, OS, etc.).

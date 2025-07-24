@@ -203,9 +203,8 @@
 </template>
 
 <script setup>
-import axios from 'axios'
 import { onMounted, ref } from 'vue'
-
+import api from '../api'
 // Props
 const props = defineProps({
   productId: {
@@ -229,7 +228,7 @@ const activeTab = ref('description')
 const isInWishlist = ref(false)
 
 // API base URL
-const API_BASE_URL = 'http://192.168.1.48:8000/api'
+const API_BASE_URL = api
 
 // Tab configuration
 const tabs = [
@@ -269,7 +268,7 @@ const fetchProductDetail = async () => {
   error.value = null
 
   try {
-    const response = await axios.get(`${API_BASE_URL}/view/product/${props.productId}`)
+    const response = await api.get(`/view/product/${props.productId}`)
 
     if (response.data.error === false && response.data.status === 'OK') {
       product.value = response.data.data
