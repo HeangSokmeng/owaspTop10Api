@@ -519,9 +519,22 @@ No Concurrent Session Control:
    ![alt text](image-37.png)
    ![alt text](image-38.png)
 
+     ```php
+    NoSQL Injection (e.g., MongoDB)
+    $input = $request->input('email');
+    User::where('email', $input)->first(); // if $input = ['\$ne' => null], bypasses auth
+   ```
+
 3. **Expected Fix**: Use prepared statements and input validation
-   -- How to fix it securely:
-   -- Use parameter binding (prepared statements) instead:
+   -- How to fix it securely
+   -- Use parameter binding (prepared statements) instead
+   -- SQL Injection: Use Eloquent or parameter binding in raw queries
+   -- NoSQL Injection: Validate input strictly before queries
+   -- Command Injection: Avoid shell commands; use Laravel helpers
+   -- Global Input: Sanitization	Use Laravel's Validator or Form Requests
+   -- Logging: Log suspicious inputs or patterns
+   -- WAF or IDS	Use ModSecurity, Cloudflare, or intrusion detection tools
+
    ```php
    $user = DB::select("SELECT id, name, email FROM users WHERE id = ? LIMIT 1", [$id]);
    ```
@@ -539,6 +552,10 @@ No Concurrent Session Control:
    ```
    ![alt text](image-39.png)
 
+    ```sql
+    $input = $request->input('email');
+    User::where('email', $input)->first(); 
+    ```
 ---
 
 ## 9. Improper Asset Management
@@ -626,11 +643,98 @@ No Concurrent Session Control:
 1. **Test**: Trigger errors or failed login attempts.
    
    **example of code**
-   
+   ```
+    public function login(Request $req)
+    {
+        $validate = Validator::make($req->only(['email', 'password']), [
+            'email' => 'required|string',
+            'password' => 'required|string|min:6|max:16',
+        ]);
+        if ($validate->fails())
+            return ApiResponse::ValidateFail($validate->errors()->all());
+        $credentials = $validate->validated();
+        $account = strtolower($credentials['email']);
+        $password = $credentials['password'];
+        $user = User::where(function ($q) use ($account) {
+            $q->whereRaw('LOWER(email) = ?', [$account])
+                ->orWhereRaw('LOWER(name) = ?', [$account]);
+        })->first();
+        if (!$user || !password_verify($password, $user->password))
+            return ApiResponse::NotFound('Invalid email or password');
+        if (!$token = JWTAuth::fromUser($user))
+            return ApiResponse::ValidateFail('Could not create token');
+        $user->roles = UserService::getRolesByUsers($user->id);
+        $data = (object) [
+            'email' => $user->email,
+            'name' => $user->name,
+            'roles' => $user->roles,
+            'id' => $user->id,
+            'token' => $token,
+        ];
+        return ApiResponse::JsonResult($data, 'Login successful.');
+    }
+    ```
    ![alt text](image-42.png)
 
 2. **Fix**: Ensure such events are logged and alerting is in place
+    **example of code**
+    ```
+        public function loginSecure(Request $req)
+        {
+            $validate = Validator::make($req->only(['email', 'password']), [
+                'email' => 'required|string',
+                'password' => 'required|string|min:6|max:16',
+            ]);
+            if ($validate->fails()) {
+                Log::warning('Login validation failed', [
+                    'email' => $req->input('email'),
+                    'ip' => $req->ip(),
+                    'errors' => $validate->errors()->all()
+                ]);
+                return ApiResponse::ValidateFail($validate->errors()->all());
+            }
+            $credentials = $validate->validated();
+            $account = strtolower($credentials['email']);
+            $password = $credentials['password'];
+            $user = User::where(function ($q) use ($account) {
+                $q->whereRaw('LOWER(email) = ?', [$account])
+                    ->orWhereRaw('LOWER(name) = ?', [$account]);
+            })->first();
 
+            if (!$user || !password_verify($password, $user->password)) {
+                Log::warning('Failed login attempt', [
+                    'email_or_name' => $account,
+                    'ip' => $req->ip(),
+                    'time' => now()
+                ]);
+                return ApiResponse::NotFound('Invalid email or password');
+            }
+            if (!$token = JWTAuth::fromUser($user)) {
+                Log::error('Token creation failed', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'ip' => $req->ip(),
+                    'time' => now()
+                ]);
+                return ApiResponse::ValidateFail('Could not create token');
+            }
+            Log::info('User login successful', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $req->ip(),
+                'time' => now()
+            ]);
+            $user->roles = UserService::getRolesByUsers($user->id);
+            $data = (object) [
+                'email' => $user->email,
+                'name' => $user->name,
+                'roles' => $user->roles,
+                'id' => $user->id,
+                'token' => $token,
+            ];
+            return ApiResponse::JsonResult($data, 'Login successful.');
+        }
+    ```
    ![alt text](image-43.png)
    
    - **Logging**: Log all authentication attempts, access control failures, permission changes, and errors.
