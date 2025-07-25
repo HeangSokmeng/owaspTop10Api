@@ -647,13 +647,13 @@ No Concurrent Session Control:
 
 3. **Expected Fix**: Use prepared statements and input validation
    - How to fix it securely
-   - Use parameter binding (prepared statements) instead
-   - SQL Injection: Use Eloquent or parameter binding in raw queries
-   - NoSQL Injection: Validate input strictly before queries
-   - Command Injection: Avoid shell commands; use Laravel helpers
-   - Global Input: Sanitization	Use Laravel's Validator or Form Requests
-   - Logging: Log suspicious inputs or patterns
-   - WAF or IDS	Use ModSecurity, Cloudflare, or intrusion detection tools
+    - Use parameter binding (prepared statements) instead
+    - SQL Injection: Use Eloquent or parameter binding in raw queries
+    - NoSQL Injection: Validate input strictly before queries
+    - Command Injection: Avoid shell commands; use Laravel helpers
+    - Global Input: Sanitization	Use Laravel's Validator or Form Requests
+    - Logging: Log suspicious inputs or patterns
+    - WAF or IDS	Use ModSecurity, Cloudflare, or intrusion detection tools
 
    ```php
    $user = DB::select("SELECT id, name, email FROM users WHERE id = ? LIMIT 1", [$id]);
