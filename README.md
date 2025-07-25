@@ -645,7 +645,7 @@ No Concurrent Session Control:
     User::where('email', $input)->first(); // if $input = ['\$ne' => null], bypasses auth
    ```
 
-3. **Expected Fix**: Use prepared statements and input validation
+3. **Expected Fix**: Use prepared statements and input validation <br/>
    **How to fix it securely**
     - Use parameter binding (prepared statements) instead
     - SQL Injection: Use Eloquent or parameter binding in raw queries
