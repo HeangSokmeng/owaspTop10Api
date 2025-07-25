@@ -18,13 +18,14 @@ Table of Contents
 ![alt text](image-4.png)
 
 -- Failures in this mechanism typically lead to unauthorized information disclosure, modification, or destruction of all data.
+<br/>
 -- Example: A user can access and modify another user's data by manipulating the URL.
 
-1. **Test**: Try accessing another user's resource by changing the ID.
+1. **Test**: Try accessing another user's resource by changing the ID. When a user is allowed to access an object (like a user profile or order) just by changing the ID in a request URL or parameter — without verifying whether the user has permission to access that object 
 
 2. **Example Attack**
 
-   1. `GET /api/users/19/profile` ← r own
+   1. `GET /api/users/19/profile` ← owner
    2. `GET /api/users/20/profile` ← another user's
 
       **The issue:**
@@ -32,7 +33,7 @@ Table of Contents
 
    **Similarly:**
 
-   1. `GET /api/users/19/orders` ← r own
+   1. `GET /api/users/19/orders` ← owner
    2. `GET /api/users/19/wishlist` – This should return only the logged-in user's wishlist (e.g., their favorite products or categories).
    3. `GET /api/users/20/wishlist` – This incorrectly allows the logged-in user (with id = 19) to access another user's wishlist.
 
@@ -42,7 +43,39 @@ Table of Contents
    - This can be fixed using Laravel Sanctum, Laravel Passport, or JWT by creating a middleware that:
      - Requires the user to be logged in (authenticated)
      - After Logged Checks that the user_id in the request matches the authenticated user's ID, allowing users to access only their own profile or related resources.
-     - And have two ways can do 1. user without id requested and 2. user with id requested
+     - And have two ways can do 
+        - 1. user without id requested param and 
+        - 2. user with id requested param
+   - Avoid Direct Object References
+     - Use indirect references (e.g., hashed IDs, UUIDs) when possible, though this is not a substitute for authorization.
+     - A UUID (Universally Unique Identifier), also sometimes called a GUID (Globally Unique Identifier), is a 128-bit label used to uniquely identify information in computer systems.
+        - Using in  laravel -> Migration
+            ```
+                Schema::create('users', function (Blueprint $table) {
+                    $table->uuid('id')->primary();
+                    $table->uuid('role_id');
+                    $table->timestamps();
+                });
+            ```
+        - Add into model
+            ```
+                use Illuminate\Support\Str;
+                protected static function boot()
+                {
+                    parent::boot();
+                    static::creating(function ($model) {
+                        $model->id = (string) Str::uuid();
+                    });
+                }
+            ```
+     - Using Hashed IDs
+      - composer require vinkla/hashids
+      - php artisan vendor:publish --provider="Vinkla\Hashids\HashidsServiceProvider"
+      - ```
+        $hash = Hashids::encode(123); // e.g. "NkK9"
+        $id = Hashids::decode('NkK9'); // [123]
+        GET /api/profile/NkK9
+        ```
 
    **Login**
    ![alt text](image.png)
@@ -54,6 +87,7 @@ Table of Contents
    ![alt text](image-2.png)
 
    **Or can use the same id in the route (e.g. /profile/{id}), but must check that the requested id matches the authenticated user's ID in the backend.**
+
    ![alt text](image-3.png)
 
 ---
@@ -64,8 +98,14 @@ Table of Contents
 
 -- Attackers can gain complete control of other users' accounts in the system, read their personal data, and perform sensitive actions on their behalf. Systems are unlikely to be able to distinguish attackers' actions from legitimate user ones.
 
-- **Example**:
+ - To Prevent Broken Authentication
+  - Strong Password Policy
+  - Rate Limiting & Account Lockout
+   - Lock account after 5–10 failed attempts
+   - Use tools like Laravel Throttle, Brute Force Prevention Middleware, or Cloudflare Rate Limiting
+   - Where possible, the user-supplied password should be compared to the stored password hash using a secure password comparison function provided by the language or framework, such as the password_verify() function in PHP.
 
+- **Example**:
   1. **Test**: Try using a weak token or a missing token.
      
      ```http
@@ -195,7 +235,7 @@ Table of Contents
 
 ![alt text](image-20.png)
 
--- Exploitation of Excessive Data Exposure is simple, and is usually performed by sniffing the traffic to analyze the API responses, looking for sensitive data exposure that should not be returned to the user.
+-- Exploitation of Excessive Data Exposure is simple, and is usually performed by sniffing the traffic to analyze the API responses, looking for sensitive data exposure that should not be returned to the user. <br/>
 -- Excessive Data Exposure commonly leads to exposure of sensitive data.
 
 ![alt text](image-16.png)
@@ -208,15 +248,18 @@ Table of Contents
 
    - Issue: we are working on product id, name, title, and created_at but why return creator?
 
-3. To fix "Excessive Data Exposure" in Laravel—especially when using select or selectRaw thats want to only select the columns truly need and avoid returning entire models unnecessarily.
+3. **Expected Fix in this case**: 
+    - in Laravel—especially when using select or selectRaw thats want to only select the columns truly need and avoid returning entire models unnecessarily.
+    - Never return full Eloquent models directly (return $model)
+    - Avoid exposing sensitive fields (e.g. password, tokens, internal IDs)
+    - Always use API resources or DTOs (Data Transfer Objects)
+    - Consider using transformers or presenters for large datasets
+    -  Only return needed fields in responses.
    - to
 
    ![alt text](image-18.png)
 
    ![alt text](image-17.png)
-
-   **Expected Fix in this case**: Only return needed fields in responses.
-
 
 ---
 ## 4. Lack of Resources & Rate Limiting
@@ -225,7 +268,15 @@ Table of Contents
 
 -- Exploitation requires simple API requests. No authentication is required. Multiple concurrent requests can be performed from a single local computer or by using cloud computing resources.
 -- Exploitation may lead to DoS, making the API unresponsive or even unavailable.
+-- This vulnerability occurs when an API does not impose restrictions on the number or size of requests a client can make, which can lead to:
+    ```
+    Denial of Service (DoS)
+    Server overload
+    Brute-force attacks
+    Abuse of API functionality (e.g., enumeration attacks)
+    ```
 
+    -- issue from 
 ```
 No Rate Limiting on Login Endpoint:
     Allows brute force or credential stuffing attacks
@@ -303,6 +354,10 @@ No Concurrent Session Control:
 
 3. **Expected Fix**: Apply rate limits per IP or user token
    - set limit rating
+   - Auth endpoints : Lower limits (e.g., 5–10/min)
+   -  General APIs : Medium limits (e.g., 60/min)
+   - Abuse-prone actions : Custom limits, CAPTCHA, lockouts
+   - Monitor : Use logs and alerts for spikes
 
    ![alt text](image-25.png)
    ![alt text](image-26.png)
@@ -337,7 +392,7 @@ No Concurrent Session Control:
    }
    ```
 
-   - with middleware
+   - with middleware for check and block ip
    ```php
    Route::post('/login', [UserController::class, 'loginSecure'])->middleware(['block-malicious-ips']);
    ```
@@ -354,8 +409,15 @@ No Concurrent Session Control:
 -- Exploitation requires the attacker to send legitimate API calls to an API endpoint that they should not have access to as anonymous users or regular, non-privileged users. Exposed endpoints will be easily exploited.
 -- Such flaws allow attackers to access unauthorized functionality. Administrative functions are key targets for this type of attack and may lead to data disclosure, data loss, or data corruption. Ultimately, it may lead to service disruption.
 
-1. **Test**: Use a lower-permission token to access admin actions.
+   **Issue:**
+   - **No middleware to check role permissions**
+     - Routes (e.g., DELETE /api/view/product/{id}) are exposed without checking if the user has permission (e.g., is an admin).
+   - **Returning routes or data that shouldn't be accessible**
+     - Sensitive routes are accessible to all authenticated users or even unauthenticated users.
+   - **Missing role-based logic inside controllers**
+     - Example: No checks inside ProductController@destroy to confirm if the user is allowed to delete.
 
+1. **Test**: Use a lower-permission token to access admin actions.
 2. **Example**
    ```http
    DELETE /api/admin/delete-user/123 ← with normal user token
@@ -366,13 +428,6 @@ No Concurrent Session Control:
 
    ![alt text](image-31.png)
 
-   **Issue:**
-   - **No middleware to check role permissions**
-     - Routes (e.g., DELETE /api/view/product/{id}) are exposed without checking if the user has permission (e.g., is an admin).
-   - **Returning routes or data that shouldn't be accessible**
-     - Sensitive routes are accessible to all authenticated users or even unauthenticated users.
-   - **Missing role-based logic inside controllers**
-     - Example: No checks inside ProductController@destroy to confirm if the user is allowed to delete.
 
    **Example**
    ```php
@@ -388,9 +443,6 @@ No Concurrent Session Control:
    ```
 
 3. **Expected Fix**: Check user roles/permissions in the backend.
-
-   **Fix**
-
    - **1. Use Middleware to Enforce Role Permissions**
      - Create a middleware to check for role
        ```bash
@@ -453,24 +505,86 @@ No Concurrent Session Control:
 2. **Example**:
    ```json
    {
-      "username": "test",
+      "username": "staff",
       "isAdmin": true
    }
    ```
 
 3. **Expected Fix**: Use whitelisting to control which fields can be updated.
-
+    - Use $fillable (whitelist)
+    - Use $guarded (blacklist)
+    - Never trust $request->all() blindly: Prefer whitelist over blacklist
+    - Validate input : Use validated or filtered input
+    - Always use validation before model assignment : Always use validation before model assignment
+    - Avoid assigning user_id, role, or is_admin from request : Set them server-side 
 ---
 
 ## 7. Security Misconfiguration
-
+-- A security misconfiguration is a common category of security issue in software and systems. It occurs when a system, application, or service is not properly configured, leaving it vulnerable to attacks or unauthorized access.<br/>
+-- The threat vectors can vary quite a lot here, it can range from not encrypting traffic between servers to having a shadow API on the network that is not maintained and poorly configured to allow for SSH access.<br/>
+-- This vulnerability might lead to an attacker being able to fully take over all the infrastructure even so this is an issue that should be handled with great care.<br/>
 1. **Test**: Check for
    - Stack traces in error
    - Missing security headers
    - Open CORS policy (`Access-Control-Allow-Origin: *`)
+   - Missing X-Frame-Options : App can be embedded in malicious iframes (clickjacking)
+   - Missing X-Content-Type-Options : Browser may interpret script files as executable
+   - Exposing X-Powered-By: PHP : Reveals framework — helps attackers
+   - Using default Laravel .env in production : Could expose app secrets
+   - No rate limiting on login : Brute-force risk
+
+   Exmaple of Security Headers in laravel api <br/>
+   - run api and try to test with command
+        ```
+        curl -I yout_domain_api
+        eg i run in my local. curl -I http://127.0.0.1:8000
+        ```
+
+   ![alt text](image-47.png)
+
 
 2. **Fix**: Sanitize errors, use CSP headers, and configure CORS strictly.
+    - How to Avoid Security Misconfiguration in Laravel
+     - Set essential headers via middleware
+     - Set APP_ENV=production and APP_DEBUG=false in .env
+     - Hide stack traces and error messages
+     - Disable default routes/controllers if don’t use it
+     - Remove unused packages (especially debug/testing)
+     - Disable directory listing (in web server)
+     - Secure cookies (HttpOnly, Secure, SameSite)
+     - Regularly audit and update dependencies
 
+    Exmaple to protect of Security Headers in laravel api <br/>
+   - create new middleware 
+        ```php artisan make:middleware SecurityHeaders
+        ```
+        ``` add to SecurityHeaders middleware file
+         public function handle(Request $request, Closure $next)
+        {
+            $response = $next($request);
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+            $response->headers->set('X-XSS-Protection', '1; mode=block');
+            $response->headers->set('X-Content-Type-Options', 'nosniff');
+            $response->headers->set('Content-Security-Policy', "default-src 'self';");
+            $response->headers->set('Referrer-Policy', 'no-referrer');
+            $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+            return $response;
+        }
+        ```
+        ```add middleware to boostrapt/app.php (for laravel 11, or laravel 10 can use with kernel.php)
+                ->withMiddleware(function (Middleware $middleware) {
+                $middleware->web(append: [
+                    SecurityHeaders::class,
+                ]);
+            })
+        ```
+
+   - and retry run api to test again with command
+        ```
+        curl -I yout_domain_api
+        eg i run in my local. curl -I http://127.0.0.1:8000
+        ```
+    ![alt text](image-48.png)
 ---
 
 ## 8. Injection (SQL, NoSQL, Command Injection)
