@@ -646,7 +646,7 @@ No Concurrent Session Control:
    ```
 
 3. **Expected Fix**: Use prepared statements and input validation
-   - How to fix it securely
+   **How to fix it securely**
     - Use parameter binding (prepared statements) instead
     - SQL Injection: Use Eloquent or parameter binding in raw queries
     - NoSQL Injection: Validate input strictly before queries
